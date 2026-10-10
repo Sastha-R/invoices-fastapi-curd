@@ -2,7 +2,8 @@ from schemas.schemas import InvoiceCreate,InvoicePatch
 from fastapi import APIRouter,File,Form,UploadFile
 from services.services import Services
 from datetime import date
-from typing import Annotated
+# from typing import Annotated
+# import json
 
 services = Services()
 invoice_route = APIRouter()
@@ -19,6 +20,15 @@ invoice_route = APIRouter()
 # ):
 #     return await services.create_invoice(invoices, photo)
 
+
+# @invoice_route.post("/invoices")
+# async def create_invoices(
+#     invoices: str = Form(...),
+#     photo: UploadFile = File(...)
+# ): 
+#     invoices = json.loads(invoices)
+#     invoices  = InvoiceCreate(**invoices)
+#     return await services.create_invoice(invoices, photo)
 
 
 @invoice_route.post("/invoices")
@@ -55,12 +65,12 @@ async def get_invoice_id(invoice_id : int):
    
 
 @invoice_route.put("/invoices/{invoice_id}")
-async def update_invoice(invoice_id : str,invoices : InvoiceCreate):
+async def update_invoice(invoice_id : int,invoices : InvoiceCreate):
         return await services.update_invoice(invoice_id,invoices)
 
 
 @invoice_route.patch("/invoices/{invoice_id}")
-async def patch_invoice(invoice_id: str, invoice: InvoicePatch):
+async def patch_invoice(invoice_id: int, invoice: InvoicePatch):
 
     return await services.patch_invoice(invoice_id, invoice)
 
@@ -68,6 +78,13 @@ async def patch_invoice(invoice_id: str, invoice: InvoicePatch):
 @invoice_route.delete("/invoices/{invoice_id}")
 async def delete_invoice(invoice_id : int):
     return await services.delete_invoice(invoice_id)
+
+
+@invoice_route.post("/invoices/{invoice_id}/delivery_proof")
+async def upload_delivery_proof(invoice_id : int , photo : UploadFile = File(...)):
+     return await services.upload_delivery_proof(invoice_id, photo)
+
+
     
 
 

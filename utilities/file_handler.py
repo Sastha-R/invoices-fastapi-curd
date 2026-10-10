@@ -3,22 +3,21 @@ from pathlib import Path
 from uuid import uuid4
 import aiofiles
 
-UPLOAD_FOLDER = Path("uploads")
-UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+PRODUCT_PHOTO_FOLDER = Path("uploads/product photo")
+DELIVERY_PROOF_FOLDER = Path("uploads/warranty docs")
 
+class FileHandler:
+    async def save_file(self , photo ,folder ,extensions):
+        extension = Path(photo.filename).suffix.lower()
 
-async def save_delivery_proof(photo):
-    extension = Path(photo.filename).suffix.lower()
+        if extension not in extensions:
+            raise ValueError("Only JPG and PNG photos are allowed")
 
-    if extension not in [".jpg", ".jpeg", ".png"]:
-        raise ValueError("Only JPG and PNG photos are allowed")
+        file_name = f"{uuid4().hex}{extension}"
+        file_path = Path(folder, file_name) 
+        content = await photo.read()
 
-    file_name = f"{uuid4().hex}{extension}"
-    file_path = UPLOAD_FOLDER / file_name
+        async with aiofiles.open(file_path, "wb") as file:
+            await file.write(content)
 
-    content = await photo.read()
-
-    async with aiofiles.open(file_path, "wb") as file:
-        await file.write(content)
-
-    return file_name, str(file_path)
+        return file_name, str(file_path)

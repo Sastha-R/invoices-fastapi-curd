@@ -1,13 +1,13 @@
 from repository.repository import Repository
 from schemas.schemas import InvoiceData,InvoicePatch
 from exception.custom_exceptions import (InvoiceNotFoundError,InvoiceAlreadyExistsError)
-from utilities.file_handler import save_delivery_proof
-
+from utilities.file_handler import (FileHandler,PRODUCT_PHOTO_FOLDER,DELIVERY_PROOF_FOLDER)
 
 class Services:
 
     def __init__(self):
         self.repository = Repository()
+        self.filehandler = FileHandler()
 
     async def create_invoice(self, invoice , photo):
 
@@ -53,15 +53,17 @@ class Services:
         )
 
         invoice_id =  await self.repository.create(invoice_data)
-    
+
+        extensions = [".jpg", ".jpeg", ".png"]
+
         #Save delivery-proof photo
-        file_name, file_path = await save_delivery_proof(photo)
+        file_name, file_path = await self.filehandler.save_file(photo , PRODUCT_PHOTO_FOLDER , extensions)
 
         #Save photo details in the database
-        await self.repository.save_file_record(invoice_id,file_name,"image",file_path)
+        await self.repository.save_file_record(invoice_id,file_name,"product_photo",file_path)
 
         return {
-            "message": "Invoice and delivery proof saved successfully",
+            "message": "Invoice and product photo saved successfully",
             "invoice_id": invoice_id,
           "photo": file_name}
     
@@ -185,4 +187,22 @@ class Services:
 
     
     
+    async def upload_delivery_proof(self, invoice_id: int, photo):
+
+        existing_invoice = await self.repository.get_by_id(invoice_id)
+
+        if not existing_invoice:
+            raise InvoiceNotFoundError("Invoice not found")
         
+        extensions = [".pdf"]
+        #  Save the delivery-proof photo
+        file_name, file_path = await self.filehandler.save_file(photo , DELIVERY_PROOF_FOLDER ,extensions)
+
+        # Save the photo details in the database
+        await self.repository.save_file_record(invoice_id, file_name,"delivery_proof",file_path)
+
+        return {
+            "message": "Delivery-proof photo saved successfully",
+            "invoice_id": invoice_id,
+            "photo": file_name
+        }

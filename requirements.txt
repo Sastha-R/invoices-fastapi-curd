@@ -1,0 +1,9 @@
+aiofiles
+fastapi
+psycopg
+psycopg-binary
+pydantic
+pydantic-settings
+python-dotenv
+python-multipart
+uvicorn
